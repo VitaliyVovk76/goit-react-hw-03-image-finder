@@ -13,58 +13,44 @@ const Status = {
   RESOLVED: "resolved",
   REJECTED: "rejected",
 };
-
-// const imageApiService = new ImageApiService();
-
 class ImageGalleryInfo extends Component {
   state = {
     images: [],
     error: null,
     page: 1,
     status: Status.IDLE,
-
     showModal: false,
-    imgModal: { img: "", alt: "" },
+    // imgModal: { img: "", alt: "" },
+    imgModal: null,
+    isClickButtonLoadMore: false,
   };
   componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevProps.searchQuery;
     const nextQuery = this.props.searchQuery;
 
-    //     if (prevQuery !== nextQuery) {
-    //       this.setState({ status: Status.PENDING, query: nextQuery });
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
 
-    //       setTimeout(() => {
-    //         imageApiService
-    //           .fetchRequest(nextQuery)
-    //           .then((images) => {
-    //             this.setState({ images, status: Status.RESOLVED });
-    //           })
-    //           .catch((error) => {
-    //             this.setState({ error, status: Status.REJECTED });
-    //           });
-    //       }, 1500);
-    //     }
-    //   }
     if (prevQuery !== nextQuery) {
       this.setState({
-        page: 1, //searchBar
-        images: [], // searchBar
-        // isClickButtonLoadMore: false,
+        page: 1,
+        images: [],
+        isClickButtonLoadMore: false,
       });
 
-      if (nextQuery === "") {
-        setTimeout(() => {
-          this.setState({
-            error: {
-              message: "Ops, empty. Please enter something...",
-            },
-            status: Status.REJECTED,
-          });
-        }, 500);
-        return;
-      }
-
       this.fetchImages(nextQuery, 1);
+    }
+
+    if (nextPage === 1) {
+      return;
+    }
+
+    if (prevPage !== nextPage) {
+      this.setState({
+        isClickButtonLoadMore: true,
+      });
+
+      this.fetchImages(prevQuery, nextPage);
     }
   }
 
@@ -75,66 +61,71 @@ class ImageGalleryInfo extends Component {
 
     imageApiService(query, page)
       .then((images) => {
+        if (images.total === 0) {
+          return this.setState({
+            error: {
+              message: `There are no pictures with the name ${query}`,
+            },
+            status: Status.REJECTED,
+          });
+        }
         this.setState((prevState) => ({
-          images: [...prevState.images, ...images],
+          images: [...prevState.images, ...images.hits],
           status: Status.RESOLVED,
         }));
-        this.scroll();
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth",
+        });
       })
       .catch((error) =>
         this.setState({
-          error: {
-            message: "Sorry, no more pictures ...",
-          },
+          //   error: {
+          //     message: `There are no pictures with the name ${query}`,
+          //   },
+          error,
           status: Status.REJECTED,
         })
       );
   }
 
-  //   setImgModal = (img, alt) => {
-  //     this.setState({ imgModal: img, alt: alt });
-  //   };
+  setImgModal = (img, alt) => {
+    this.setState({ imgModal: { img: img, alt: alt } });
+  };
 
-  //   toggleModal = (data) => {
-  //     this.setState(({ showModal }) => ({ showModal: !showModal }));
-  //     console.log("ShowModal:");
-  //     console.log(this.state.showModal);
-  //   };
-  //   nextPageImg() {
-  //     // imageApiService.incrementPage();
-  //     imageApiService.fetchRequest(this.state.query);
-  //     // console.log(this.state.query);
-  //     // console.log(this.state.showModal);
-  //     console.log("helloddfsdafa");
-  //   }
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
+  pageIncrement = () =>
+    this.setState((prevState) => ({ page: prevState.page + 1 }));
 
   render() {
-    const { images, error, status, showModal } = this.state;
-    console.log(this.state.images);
+    const {
+      images,
+      error,
+      status,
+      showModal,
+      imgModal,
+      isClickButtonLoadMore,
+    } = this.state;
     if (status === Status.IDLE) {
       return null;
     }
     if (status === Status.PENDING) {
       return (
-        <div className={s.loader}>
-          <Loader />
-          <p>Загружаем...</p>
-        </div>
-      );
-    }
-    if (status === Status.RESOLVED && showModal) {
-      return (
         <>
-          <ImageGallery
-            images={images}
-            onOpenModal={this.toggleModal}
-            onSetImg={this.setImgModal}
-          />
-          <Modal
-            onCloseModal={this.toggleModal}
-            imgModal={this.state.imgModal}
-          />
-          ;
+          {isClickButtonLoadMore && (
+            <ImageGallery
+              images={images}
+              onOpenModal={this.toggleModal}
+              onSetImg={this.setImgModal}
+            />
+          )}
+          <div className={s.loader}>
+            <Loader />
+            <p>Загружаем...</p>
+          </div>
         </>
       );
     }
@@ -146,11 +137,14 @@ class ImageGalleryInfo extends Component {
             onOpenModal={this.toggleModal}
             onSetImg={this.setImgModal}
           />
-          <Button onNextPageImg={this.nextPageImg} />
+          <Button onNextPageImg={this.pageIncrement} />
+
+          {showModal && (
+            <Modal onCloseModal={this.toggleModal} imgModal={imgModal} />
+          )}
         </>
       );
     }
-
     if (status === Status.REJECTED) {
       return <ImageGalleryError message={error.message} />;
     }

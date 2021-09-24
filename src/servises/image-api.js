@@ -50,29 +50,38 @@
 
 // export default ImageApiService;
 
-const BASE_URL = "https://pixabay.com/api";
-const API_KEY = "22356210-f5a6fb995cd777b2b01184cc9";
+const KEY = "22453348-6986f932e651dfab56ec0e491";
+const URL = "https://pixabay.com/api/?image_type=photo&orientation=horizontal";
+const AMOUNT_IMAGES = 12;
 
-const ImageApiService = async (searchQuery, page) => {
-  const searchParams = new URLSearchParams({
-    image_type: "photo",
-    orientation: "horizontal",
-    q: searchQuery,
-    page,
-    per_page: 12,
-    key: `${API_KEY}`,
+function ImageApiService(query, page) {
+  const url = `${URL}&q=${query}&page=${page}&per_page=${AMOUNT_IMAGES}&key=${KEY}`;
+  return fetch(url).then((response) => {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(new Error(`Нет картинок с запросом ${query}`));
   });
-  const url = `${BASE_URL}/?${searchParams}`;
-
-  const response = await fetch(url);
-  const fetchObject = await response.json();
-  const imagesArray = await fetchObject.hit;
-
-  if (imagesArray.length !== 0) {
-    return imagesArray;
-  }
-
-  return Promise.reject(new Error(`No pictures with name "${searchQuery}"`));
-};
+}
 
 export default ImageApiService;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// const KEY = "22453348-6986f932e651dfab56ec0e491";
+// const URL = "https://pixabay.com/api/?image_type=photo&orientation=horizontal";
+// const AMOUNT_IMAGES = 12;
+
+// const ImageApiService = async (query, page) => {
+//   const url = `${URL}&q=${query}&page=${page}&per_page=${AMOUNT_IMAGES}&key=${KEY}`;
+
+//   const response = await fetch(url);
+//   const fetchObject = await response.json();
+
+//   if (fetchObject.length !== 0) {
+//     return fetchObject;
+//   }
+//   return Promise.reject(new Error(`No pictures with name "${query}"`));
+// };
+
+// export default ImageApiService;
