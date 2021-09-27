@@ -47,7 +47,6 @@ class ImageGalleryInfo extends Component {
       this.fetchImages(prevQuery, nextPage);
     }
   }
-
   fetchImages(query, page) {
     this.setState({
       status: Status.PENDING,
@@ -76,10 +75,10 @@ class ImageGalleryInfo extends Component {
         })
         .catch((error) =>
           this.setState({
-            //   error: {
-            //     message: `There are no pictures with the name ${query}`,
-            //   },
-            error,
+            error: {
+              message: `No pictures with the name ${query}`,
+            },
+            // error,
             status: Status.REJECTED,
           })
         );

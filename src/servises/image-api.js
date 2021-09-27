@@ -51,7 +51,7 @@
 // export default ImageApiService;
 
 const KEY = "22453348-6986f932e651dfab56ec0e491";
-const URL = "https://pixabay.com/api/?image_type=photo&orientation=horizontal";
+const URL = "ttps://pixabay.com/api/?image_type=photo&orientation=horizontal";
 const AMOUNT_IMAGES = 12;
 
 function ImageApiService(query, page) {
