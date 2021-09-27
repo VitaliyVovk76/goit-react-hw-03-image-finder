@@ -22,7 +22,6 @@ class ImageGalleryInfo extends Component {
     showModal: false,
     // imgModal: { img: "", alt: "" },
     imgModal: null,
-    isClickButtonLoadMore: false,
   };
   componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevProps.searchQuery;
@@ -35,7 +34,6 @@ class ImageGalleryInfo extends Component {
       this.setState({
         page: 1,
         images: [],
-        isClickButtonLoadMore: false,
       });
 
       this.fetchImages(nextQuery, 1);
@@ -46,10 +44,6 @@ class ImageGalleryInfo extends Component {
     }
 
     if (prevPage !== nextPage) {
-      this.setState({
-        isClickButtonLoadMore: true,
-      });
-
       this.fetchImages(prevQuery, nextPage);
     }
   }
@@ -58,35 +52,38 @@ class ImageGalleryInfo extends Component {
     this.setState({
       status: Status.PENDING,
     });
-
-    imageApiService(query, page)
-      .then((images) => {
-        if (images.total === 0) {
-          return this.setState({
-            error: {
-              message: `There are no pictures with the name ${query}`,
-            },
-            status: Status.REJECTED,
+    setTimeout(() => {
+      imageApiService(query, page)
+        .then((images) => {
+          if (images.total === 0) {
+            this.setState({
+              error: {
+                message: `There are no pictures with the name ${query}`,
+              },
+              status: Status.REJECTED,
+            });
+            return;
+          }
+          /*this.setState((prevState) => ({... - смотреть конспект занятие 3 -> 3.5. setState с функцией и лекция Наташи 0:40:30*/
+          this.setState((prevState) => ({
+            images: [...prevState.images, ...images.hits],
+            status: Status.RESOLVED,
+          }));
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
           });
-        }
-        this.setState((prevState) => ({
-          images: [...prevState.images, ...images.hits],
-          status: Status.RESOLVED,
-        }));
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: "smooth",
-        });
-      })
-      .catch((error) =>
-        this.setState({
-          //   error: {
-          //     message: `There are no pictures with the name ${query}`,
-          //   },
-          error,
-          status: Status.REJECTED,
         })
-      );
+        .catch((error) =>
+          this.setState({
+            //   error: {
+            //     message: `There are no pictures with the name ${query}`,
+            //   },
+            error,
+            status: Status.REJECTED,
+          })
+        );
+    }, 2000);
   }
 
   setImgModal = (img, alt) => {
@@ -101,27 +98,18 @@ class ImageGalleryInfo extends Component {
     this.setState((prevState) => ({ page: prevState.page + 1 }));
 
   render() {
-    const {
-      images,
-      error,
-      status,
-      showModal,
-      imgModal,
-      isClickButtonLoadMore,
-    } = this.state;
+    const { images, error, status, showModal, imgModal } = this.state;
     if (status === Status.IDLE) {
       return null;
     }
     if (status === Status.PENDING) {
       return (
         <>
-          {isClickButtonLoadMore && (
-            <ImageGallery
-              images={images}
-              onOpenModal={this.toggleModal}
-              onSetImg={this.setImgModal}
-            />
-          )}
+          <ImageGallery
+            images={images}
+            onOpenModal={this.toggleModal}
+            onSetImg={this.setImgModal}
+          />
           <div className={s.loader}>
             <Loader />
             <p>Загружаем...</p>

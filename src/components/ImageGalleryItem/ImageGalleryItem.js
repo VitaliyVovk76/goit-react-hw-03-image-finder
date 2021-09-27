@@ -1,9 +1,4 @@
-// import { Component } from "react";
 import s from "./ImageGalleryItem.module.css";
-// export default function ImageGalleryItem({
-//   img: { webformatURL, tags, id, largeImageURL },
-//   onOpenModal,
-// }) {
 export default function ImageGalleryItem({
   onSetImg,
   largeImageURL,
