@@ -1,4 +1,5 @@
 import { Component } from "react";
+import PropTypes from "prop-types";
 import s from "./Button.module.css";
 export default class Button extends Component {
   render() {
@@ -13,3 +14,5 @@ export default class Button extends Component {
     );
   }
 }
+
+Button.propTypes = { onNextPageImg: PropTypes.func.isRequired };

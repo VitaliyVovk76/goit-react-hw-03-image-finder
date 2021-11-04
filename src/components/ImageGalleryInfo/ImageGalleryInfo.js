@@ -1,4 +1,5 @@
 import { Component } from "react";
+import PropTypes from "prop-types";
 import imageApiService from "../../servises/image-api";
 import ImageGallery from "../ImageGallery/ImageGallery";
 import ImageGalleryError from "../ImageGalleryError/ImageGalleryError";
@@ -137,4 +138,7 @@ class ImageGalleryInfo extends Component {
     }
   }
 }
+
+ImageGalleryInfo.propTypes = { searchQuery: PropTypes.string.isRequired };
+
 export default ImageGalleryInfo;
